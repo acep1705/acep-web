@@ -1,0 +1,423 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Web Alan Ganteng</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+    body {
+      background-color: #f4f4f4;
+      text-align: center;
+      margin-top: 50px;
+    }
+
+    .form-container {
+      width: 300px;
+      margin: 0 auto;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      background-color: #fff;
+    }
+
+    .menu-container {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.4);
+      padding-top: 60px;
+    }
+
+    .modal-content {
+      background-color: #fefefe;
+      margin: 5% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%;
+      max-width: 300px;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Main Menu -->
+  <div class="form-container" id="main-menu">
+    <h2>Selamat Datang</h2>
+    <button class="btn btn-primary" onclick="showRegistration()">Daftar</button>
+    <button class="btn btn-secondary" onclick="showLogin()">Login</button>
+    <button class="btn btn-secondary" onclick="showAdminLogin()">Login Admin</button>
+  </div>
+
+  <!-- Registration Form -->
+  <div class="form-container" id="registration-form" style="display: none;">
+    <h2>Registration</h2>
+    <form onsubmit="registerUser(event)">
+      <input type="text" id="reg-username" placeholder="Enter Your Username" required>
+      <input type="password" id="reg-password" placeholder="Enter Your Password" required>
+      <button type="submit" class="btn btn-primary">Register</button>
+    </form>
+    <button class="btn btn-link" onclick="showMainMenu()">Kembali ke Menu Utama</button>
+  </div>
+
+  <!-- Login Form -->
+  <div class="form-container" id="login-form" style="display: none;">
+    <h2>Login</h2>
+    <form onsubmit="loginUser(event)">
+      <input type="text" id="login-username" placeholder="Enter Your Username" required>
+      <input type="password" id="login-password" placeholder="Enter Your Password" required>
+      <button type="submit" class="btn btn-primary">Login</button>
+    </form>
+    <button class="btn btn-link" onclick="showMainMenu()">Kembali ke Menu Utama</button>
+  </div>
+
+  <!-- Admin Login Form -->
+  <div class="form-container" id="admin-login-form" style="display: none;">
+    <h2>Admin Login</h2>
+    <form onsubmit="adminLogin(event)">
+      <input type="text" id="admin-username" placeholder="Username" required>
+      <input type="password" id="admin-password" placeholder="Password" required>
+      <button type="submit" class="btn btn-primary">Login</button>
+    </form>
+    <button class="btn btn-link" onclick="showMainMenu()">Kembali ke Menu Utama</button>
+  </div>
+
+  <!-- Next Form -->
+  <div class="form-container" id="next-form" style="display: none;">
+    <h2>Web Alan Ganteng Se Alam Semesta</h2>
+    <button class="btn btn-success" onclick="showSubMenu()">Tabungan Saya</button>
+    <button class="btn btn-info" onclick="showUserId()">Cek ID Pengguna</button>
+    <button class="btn btn-danger" onclick="logout()">Logout</button>
+    <button class="btn btn-warning" onclick="showGame()">Game Tebak</button>
+    <div class="menu-container" id="menu-container"></div>
+
+    <!-- Transaction History -->
+    <div id="transaction-history" style="margin-top: 20px;"></div>
+  </div>
+
+  <!-- Transfer Form -->
+  <div class="form-container" id="transfer-form" style="display: none;">
+    <h2>Transfer Saldo</h2>
+    <form onsubmit="transferFunds(event)">
+      <input type="text" id="transfer-id" placeholder="Masukkan ID Pengguna" required>
+      <input type="number" id="transfer-amount" placeholder="Masukkan Nominal" required>
+      <button type="submit" class="btn btn-primary">Transfer</button>
+    </form>
+    <button class="btn btn-secondary" onclick="backToMenu()">Kembali</button>
+  </div>
+
+  <!-- Game Section -->
+  <div class="form-container" id="game-section" style="display: none;">
+    <h2>Game Tebak 🎲</h2>
+    <p>Pilih kotak untuk bermain:</p>
+    <div>
+      <button class="btn btn-warning" onclick="playGame(1)">Kotak 1</button>
+      <button class="btn btn-warning" onclick="playGame(2)">Kotak 2</button>
+      <button class="btn btn-warning" onclick="playGame(3)">Kotak 3</button>
+      <button class="btn btn-warning" onclick="playGame(4)">Kotak 4</button>
+    </div>
+    <button class="btn btn-secondary" onclick="backToMenu()">Kembali</button>
+  </div>
+
+  <!-- Admin Panel -->
+  <div class="form-container" id="admin-panel" style="display: none;">
+    <h2>Admin Panel</h2>
+    <div>
+      <input type="text" id="search-input" placeholder="Cari ID/Nama Pengguna" />
+      <button class="btn btn-primary" onclick="searchUser()">Cari</button>
+    </div>
+    <div id="user-list"></div>
+    <button class="btn btn-secondary" onclick="showMainMenu()">Kembali ke Halaman Utama</button>
+  </div>
+
+  <!-- Modal for Notifications -->
+  <div id="notificationModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <p id="modal-message"></p>
+    </div>
+  </div>
+
+  <script>
+    let userBalance = 100000; // Initial user balance
+    let transactionHistory = []; // To store transaction history
+    let currentUser = null; // To keep track of the logged-in user
+    let users = JSON.parse(localStorage.getItem('registeredUsers')) || []; // Store registered users
+    let pendingTransfers = []; // Store pending transfers
+
+    function showModal(message) {
+      document.getElementById("modal-message").textContent = message;
+      document.getElementById("notificationModal").style.display = "block";
+    }
+
+    function closeModal() {
+      document.getElementById("notificationModal").style.display = "none";
+    }
+
+    function showMainMenu() {
+      document.getElementById('main-menu').style.display = 'block';
+      document.getElementById('registration-form').style.display = 'none';
+      document.getElementById('login-form').style.display = 'none';
+      document.getElementById('admin-login-form').style.display = 'none';
+      document.getElementById('admin-panel').style.display = 'none';
+    }
+
+    function showRegistration() {
+      document.getElementById('main-menu').style.display = 'none';
+      document.getElementById('registration-form').style.display = 'block';
+    }
+
+    function showLogin() {
+      document.getElementById('main-menu').style.display = 'none';
+      document.getElementById('login-form').style.display = 'block';
+    }
+
+    function showAdminLogin() {
+      document.getElementById('main-menu').style.display = 'none';
+      document.getElementById('admin-login-form').style.display = 'block';
+    }
+
+    function generateUserId() {
+      return Math.floor(Math.random() * 1000000); // Generate a random user ID
+    }
+
+    function registerUser(event) {
+      event.preventDefault();
+      const regUsername = document.getElementById('reg-username').value;
+      const regPassword = document.getElementById('reg-password').value;
+
+      if (users.find(user => user.username === regUsername)) {
+        showModal('Username sudah terdaftar. Silakan pilih username lain.');
+        return;
+      }
+
+      const userId = generateUserId(); // Generate user ID
+      users.push({ username: regUsername, password: regPassword, id: userId, balance: 100000 });
+      localStorage.setItem('registeredUsers', JSON.stringify(users));
+
+      document.getElementById('registration-form').style.display = 'none';
+      document.getElementById('login-form').style.display = 'block';
+    }
+
+    function loginUser(event) {
+      event.preventDefault();
+      const loginUsername = document.getElementById('login-username').value;
+      const loginPassword = document.getElementById('login-password').value;
+
+      const user = users.find(u => u.username === loginUsername && u.password === loginPassword);
+
+      if (user) {
+        currentUser = user; // Store current user
+        userBalance = user.balance; // Set user balance from logged-in user
+        document.getElementById('login-form').style.display = 'none';
+        document.getElementById('next-form').style.display = 'block';
+        showTransactionHistory(); // Show transaction history after login
+      } else {
+        showModal('Username atau password tidak valid. Silakan coba lagi.');
+      }
+    }
+
+    function adminLogin(event) {
+      event.preventDefault();
+      const adminUsername = document.getElementById('admin-username').value;
+      const adminPassword = document.getElementById('admin-password').value;
+
+      if (adminUsername === "ac" && adminPassword === "17") {
+        document.getElementById('admin-login-form').style.display = 'none';
+        showAdminPanel();
+      } else {
+        showModal('Username atau password admin tidak valid.');
+      }
+    }
+
+    function showAdminPanel() {
+      document.getElementById('admin-panel').style.display = 'block';
+      document.getElementById('user-list').innerHTML = ''; // Clear previous user list
+      users.forEach(user => {
+        const userItem = document.createElement('div');
+        userItem.innerHTML = `
+          <p>ID: ${user.id}, Username: ${user.username}, Saldo: ${user.balance} 
+          <button class="btn btn-danger" onclick="blockUser(${user.id})">Blokir</button>
+          <button class="btn btn-success" onclick="unblockUser(${user.id})">Buka Blokir</button></p>
+        `;
+        document.getElementById('user-list').appendChild(userItem);
+      });
+    }
+
+    function blockUser(userId) {
+      const userIndex = users.findIndex(u => u.id === userId);
+      if (userIndex !== -1) {
+        users.splice(userIndex, 1); // Remove user from the list
+        localStorage.setItem('registeredUsers', JSON.stringify(users));
+        showModal(`User dengan ID ${userId} telah diblokir.`);
+        showAdminPanel(); // Refresh admin panel
+      }
+    }
+
+    function unblockUser(userId) {
+      const user = users.find(u => u.id === userId);
+      if (user) {
+        showModal(`User dengan ID ${userId} sudah tidak terblokir.`);
+      } else {
+        showModal(`User dengan ID ${userId} tidak ditemukan.`);
+      }
+    }
+
+    function searchUser() {
+      const searchTerm = document.getElementById('search-input').value.toLowerCase();
+      const userListContainer = document.getElementById('user-list');
+      userListContainer.innerHTML = ''; // Clear previous user list
+
+      users.forEach(user => {
+        if (user.username.toLowerCase().includes(searchTerm) || user.id.toString().includes(searchTerm)) {
+          const userItem = document.createElement('div');
+          userItem.innerHTML = `
+            <p>ID: ${user.id}, Username: ${user.username}, Saldo: ${user.balance} 
+            <button class="btn btn-danger" onclick="blockUser(${user.id})">Blokir</button>
+            <button class="btn btn-success" onclick="unblockUser(${user.id})">Buka Blokir</button></p>
+          `;
+          userListContainer.appendChild(userItem);
+        }
+      });
+    }
+
+    function showUserId() {
+      if (currentUser) {
+        showModal(`ID Pengguna Anda: ${currentUser.id}`);
+      } else {
+        showModal('Anda belum login.');
+      }
+    }
+
+    function showGame() {
+      document.getElementById('next-form').style.display = 'none';
+      document.getElementById('game-section').style.display = 'block';
+    }
+
+    function logout() {
+      currentUser = null; // Reset current user
+      document.getElementById('next-form').style.display = 'none';
+      showMainMenu(); // Return to main menu
+    }
+
+    function showSubMenu() {
+      const menuContainer = document.getElementById('menu-container');
+      const menuItems = ['Transfer', 'Cek Saldo', 'Shop', 'Top Up', 'Beli Pulsa'];
+
+      menuContainer.innerHTML = '';
+      menuItems.forEach((item, index) => {
+        const menuItem = document.createElement('div');
+        menuItem.className = 'menu-item';
+        menuItem.innerHTML = item;
+        menuItem.onclick = () => handleMenu(item);
+        menuContainer.appendChild(menuItem);
+      });
+
+      menuContainer.style.display = 'flex';
+    }
+
+    function showTransactionHistory() {
+      const historyContainer = document.getElementById('transaction-history');
+      historyContainer.innerHTML = ''; // Clear previous history
+      transactionHistory.forEach(transaction => {
+        const transactionItem = document.createElement('div');
+        transactionItem.textContent = transaction;
+        historyContainer.appendChild(transactionItem);
+      });
+    }
+
+    function handleMenu(menu) {
+      switch (menu) {
+        case 'Transfer':
+          document.getElementById('next-form').style.display = 'none';
+          document.getElementById('transfer-form').style.display = 'block';
+          break;
+        case 'Cek Saldo':
+          showModal(`Total saldo Anda: ${userBalance}`);
+          break;
+        case 'Shop':
+          showModal('Fitur shop belum diimplementasikan.');
+          break;
+        case 'Top Up':
+          showModal('Fitur top-up belum diimplementasikan.');
+          break;
+        case 'Beli Pulsa':
+          showModal('Fitur beli pulsa belum diimplementasikan.');
+          break;
+      }
+    }
+
+    function transferFunds(event) {
+      event.preventDefault();
+      const transferId = document.getElementById('transfer-id').value;
+      const transferAmount = parseFloat(document.getElementById('transfer-amount').value);
+
+      if (isNaN(transferAmount) || transferAmount <= 0 || transferAmount > userBalance) {
+        showModal('Nominal transfer tidak valid. Silakan coba lagi.');
+        return;
+      }
+
+      const recipient = users.find(u => u.id === parseInt(transferId));
+      if (!recipient) {
+        showModal('ID penerima tidak ditemukan.');
+        return;
+      }
+
+      // Simulate admin approval
+      const isApproved = confirm(`Apakah Anda ingin mengizinkan transfer sebesar ${transferAmount} ke ID ${transferId}?`);
+      if (!isApproved) {
+        showModal('Transfer ditolak. Saldo Anda tetap.');
+        return;
+      }
+
+      userBalance -= transferAmount; // Deduct from sender's balance
+      recipient.balance = (recipient.balance || 0) + transferAmount; // Add to recipient's balance
+      transactionHistory.push(`Transfer ${transferAmount} ke ID ${transferId}. Saldo sekarang: ${userBalance}`);
+      showModal(`Transfer sebesar ${transferAmount} berhasil ke ID ${transferId}. Saldo sekarang: ${userBalance}`);
+      showTransactionHistory(); // Update transaction history
+      document.getElementById('transfer-form').reset(); // Clear form
+    }
+
+    function backToMenu() {
+      document.getElementById('transfer-form').style.display = 'none';
+      document.getElementById('next-form').style.display = 'block';
+    }
+
+    function playGame(boxNumber) {
+      const zonkPosition = Math.floor(Math.random() * 4) + 1; // Random zonk position
+      const betAmount = parseFloat(prompt('Masukkan jumlah taruhan:'));
+      
+      if (isNaN(betAmount) || betAmount <= 0 || betAmount > userBalance) {
+        showModal('Taruhan tidak valid. Silakan coba lagi.');
+        return;
+      }
+
+      if (boxNumber === zonkPosition) {
+        userBalance -= betAmount; // Deduct the bet amount for a loss
+        transactionHistory.push(`Kalah! Taruhan: ${betAmount}, Saldo sekarang: ${userBalance}`);
+        showModal(`Sayang sekali! Anda kalah. Saldo sekarang: ${userBalance}`);
+      } else {
+        userBalance += betAmount * 2; // Double the bet amount for a win
+        transactionHistory.push(`Menang! Taruhan: ${betAmount}, Saldo sekarang: ${userBalance}`);
+        showModal(`Selamat! Anda memenangkan ${betAmount * 2}. Saldo sekarang: ${userBalance}`);
+      }
+      showTransactionHistory(); // Update transaction history
+    }
+  </script>
+
+</body>
+</html>
